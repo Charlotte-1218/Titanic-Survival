@@ -20,8 +20,15 @@ print(df.isnull().sum())
 
 # 处理缺失值
 df = df.drop(columns=['Cabin'])
-df['Age'] = df['Age'].fillna(df['Age'].median())# 中位数填补
-df['Embarked'] = df['Embarked'].fillna(df['Embarked'].mode()[0])# 众数填补
+
+train_idx, test_idx = train_test_split(df.index, test_size=0.2, random_state=924)
+
+age_median = df.loc[train_idx, 'Age'].median()
+embarked_mode = df.loc[train_idx, 'Embarked'].mode()[0]
+df.loc[train_idx, 'Age'] = df.loc[train_idx, 'Age'].fillna(age_median)
+df.loc[test_idx, 'Age'] = df.loc[test_idx, 'Age'].fillna(age_median)
+df.loc[train_idx, 'Embarked'] = df.loc[train_idx, 'Embarked'].fillna(embarked_mode)
+df.loc[test_idx, 'Embarked'] = df.loc[test_idx, 'Embarked'].fillna(embarked_mode)
 
 # 特征工程
 df = df.drop(columns=['PassengerId', 'Name', 'Ticket'])# 无规律，删除
@@ -31,7 +38,7 @@ df = pd.get_dummies(df, columns=['Embarked'], drop_first=True)# 独热编码
 # 分离特征和结果
 x = df.drop('Survived', axis=1).astype(float).values
 y = df['Survived'].values
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=924)
 
 # 标准化
 mean = x_train.mean(axis=0)
